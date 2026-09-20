@@ -90,8 +90,8 @@ L548,133
 L586,133 
 L586,176 
 L538,176 
-L538,194 
-L568,194 
+L538,191 
+L568,191 
 L568,256 
 L586,256 
 L586,282 
@@ -153,21 +153,47 @@ L10,140
 L10,115 
 L26,115 
 Z`;
-const CORRIDOR_PATH = "M100,350 V80 H520 V550 M520,520 H765";
+const CORRIDOR_PATH = "M118,347 V68 H220 V115 H527 V528 M527,525 H790";
 
 const TYPES = ["Derslik","Laboratuvar","Ofis","Toplantı","Depo","Ortak Alan"];
-const ROOMS = [
-  //{id:"l1",x:20,y:25,w:50,h:90},{id:"l2",x:80,y:25,w:50,h:90},
-  //{id:"l3",x:20,y:130,w:50,h:90},{id:"l4",x:80,y:130,w:50,h:90},
-  {id:"E9", type:"Derslik", name:"E9", x:30,y:348,w:94,h:40},{id:"E8",type:"Derslik", name:"E8",x:30,y:230,w:50,h:115},{id:"E7", type:"Derslik", name:"E7",x:30,y:112,w:50,h:115},
-  //{id:"t3",x:325,y:26,w:100,h:54},{id:"t4",x:435,y:26,w:100,h:54},
-  //{id:"r1",x:546,y:200,w:33,h:60},{id:"r2",x:546,y:265,w:33,h:60},
-  //{id:"r3",x:546,y:330,w:33,h:60},{id:"r4",x:546,y:395,w:33,h:70},
-  //{id:"w1",x:575,y:488,w:115,h:42},{id:"w2",x:695,y:488,w:115,h:42},
-  //{id:"w3",x:575,y:568,w:115,h:26},{id:"w4",x:695,y:568,w:115,h:26},
-  {id:"Modelleme Lab.", type:"Lab", name:"Modelleme Lab.", x:461,y:551,w:106,h:122}
+const ROOMS_FLOOR1 = [
+  {id:"E9", type:"Derslik", name:"E9", x:30,y:348,w:94,h:40, room_code:"unknown", info:"E9 dersliği"},
+  {id:"E8", type:"Derslik", name:"E8", x:30,y:230,w:78,h:115, room_code:"unknown", info:"E8 dersliği"},
+  {id:"E7", type:"Derslik", name:"E7", x:30,y:112,w:78,h:115, room_code:"unknown", info:"E7 dersliği"},
+  {id:"unknown1", type:"unknown", name:"Bilinmiyor", x:30,y:80,w:42,h:30, room_code:"3206", info:""},
+  {id:"EmreEfendi", type:"Ofis", name:"Dr. Emre Efendi", x:30,y:48,w:42,h:30, room_code:"3204", info:"Dr. Emre Efendi'nin ofisi birinci kattadır."},
+  {id:"ErkekTuvaleti1", type:"Tuvalet", name:"Erkek Tuvaleti", x:128,y:78,w:64,h:25, room_code:"3201", info:"Birinci kattaki erkek tuvaleti."},
+  {id:"ModellemeLab2", type:"Laboratuvar", name:"Modelleme ve Benzetim Laboratuvarı 2", x:461,y:551,w:106,h:122, room_code:"unknown", info:""},
+  {id:"AlperenBerber", type:"Ofis", name:"Alperen Berber", x:195,y:28,w:30,h:28, room_code:"4214", info:"Alperen Berber'in ofisi."},
+  {id:"FurkanSabriDipi", type:"Ofis", name:"Furkan Sabri Dipi", x:228,y:28,w:30,h:28, room_code:"4210", info:"Furkan Sabri Dipi'nin ofisi."},
+  {id:"E6", type:"Derslik", name:"E6", x:261,y:28,w:80,h:70, room_code:"unknown", info:"E6 dersliği"},
+  {id:"SeminerSalonu", type:"Derslik", name:"Seminer Salonu", x:344,y:28,w:80,h:70, room_code:"unknown", info:"Seminer salonu"},
+  {id:"BilgisayarLab1", type:"Laboratuvar", name:"Bilgisayar Laboratuvarı 1", x:427,y:28,w:118,h:70, room_code:"unknown", info:""},
+  {id:"ErkekPersonelTuvaleti1", type:"Tuvalet", name:"Erkek Personel Tuvaleti", x:492,y:131,w:25,h:60, room_code:"4201", info:"Birinci kattaki erkek tuvaleti."},
+  {id:"Bursiyerler", type:"Özel", name:"Bursiyerler", x:465,y:194,w:52,h:40, room_code:"5201", info:""},
+  {id:"MikroveNanoIslemciSistemlerLab", type:"Laboratuvar", name:"Mikro ve Nano İşlemci Sistemler Laboratuvarı", x:465,y:236,w:52,h:125, room_code:"unknown", info:""},
+  {id:"SayisalSistemlerLab", type:"Laboratuvar", name:"Sayısal Sistemler Laboratuvarı", x:465,y:364,w:52,h:125, room_code:"5205", info:""},
+  {id:"Depo2", type:"Depo", name:"Depo 2", x:465,y:492,w:52,h:56, room_code:"unknown", info:""},
+  {id:"CigdemSeckinGurel", type:"Ofis", name:"Prof. Dr. Çiğdem Seçkin Gürel", x:538,y:194,w:27,h:40, room_code:"5204", info:""},
+  {id:"MustafaEminCelik_ZiyaTunaBolukbasi", type:"Ofis", name:"Mustafa Emin Çelik - Ziya Tuna Bölükbaşı", x:538,y:236,w:27,h:36, room_code:"5206", info:""},
+  {id:"AlpDemirel_ErdemGoral", type:"Ofis", name:"Alp Demirel - Erdem Göral", x:538,y:274,w:27,h:36, room_code:"5208", info:""},
+  {id:"IsmailUyanik", type:"Ofis", name:"Dr. İsmail Uyanık", x:538,y:312,w:27,h:36, room_code:"5210", info:""},
+  {id:"unknown2", type:"unknown", name:"Bilinmiyor", x:538,y:350,w:27,h:36, room_code:"5212", info:""},
+  {id:"BerkanDulek", type:"Ofis", name:"Dr. Berkan Dülek", x:538,y:388,w:27,h:36, room_code:"5214", info:""},
+  {id:"DeryaAltunay", type:"Ofis", name:"Yrd. Doç. Dr. Derya Altunay", x:538,y:426,w:27,h:36, room_code:"5216", info:""},
+  {id:"unknown3", type:"unknown", name:"Bilinmiyor", x:538,y:464,w:27,h:36, room_code:"", info:""},
+  {id:"KadinTuvaleti1", type:"Tuvalet", name:"Kadın Tuvaleti", x:568,y:468,w:27,h:36, room_code:"E202", info:""},
+  {id:"unknown4", type:"unknown", name:"Bilinmiyor", x:597,y:468,w:27,h:36, room_code:"E203", info:""},
+  {id:"ErkekTuvaleti2", type:"Tuvalet", name:"Erkek Tuvaleti", x:626,y:468,w:27,h:36, room_code:"E204", info:""},
+  {id:"unknown5", type:"unknown", name:"Bilinmiyor", x:597,y:565,w:27,h:16, room_code:"E201", info:""},
+  {id:"OsmanBulentTor", type:"Ofis", name:"Doç. Dr. Osman Bülent Tör", x:655,y:468,w:27,h:36, room_code:"E207", info:""},
+  {id:"IsikCadirci", type:"Ofis", name:"Prof. Dr. Işık Çadırcı", x:684,y:468,w:27,h:36, room_code:"E208", info:""},
+  {id:"GucElektronigiArastirmaLab", type:"Laboratuvar", name:"Güç Elektroniği Araştırma Laboratuvarı", x:713,y:468,w:77,h:36, room_code:"E209", info:""},
+  {id:"BiyomedikalArastirmaLab", type:"Laboratuvar", name:"Biyomedikal Araştırma Laboratuvarı", x:713,y:545,w:77,h:36, room_code:"E210", info:""},
+  {id:"ElektromanyetikArastirmaLab", type:"Laboratuvar", name:"Elektromanyetik Araştırma Laboratuvarı", x:655,y:545,w:56,h:36, room_code:"E211", info:""},
+
 ].map((r,i)=>({...r, name:r.name,
-  type:r.type, info:"Bilgiler daha sonra eklenecek (yer tutucu)."}));
+  type:r.type, info:r.info}));
 
 const svg = document.getElementById("plan");
 let html = `
@@ -176,10 +202,93 @@ let html = `
   <path class="corridor" d="${CORRIDOR_PATH}"/>
   <path class="corridor-center" d="${CORRIDOR_PATH}"/>
 `;
-ROOMS.forEach(r=>{
+ROOMS_FLOOR1.forEach(r => {
+  const name = r.name || "";
+  const minFont = 3;
+  const maxFont = 20;
+  
+  const charWidthMultiplier = 0.6; 
+  const lineSpacing = 1.2;
+
+  const textMargin = 1;
+  let availW = r.w - (textMargin * 2);
+  let availH = r.h - (textMargin * 2);
+  
+  if (availW <= 0) availW = r.w; 
+  if (availH <= 0) availH = r.h;
+  
+  let bestFontSize = minFont;
+  let bestLines = [];
+
+  for (let f = maxFont; f >= minFont; f -= 1) {
+    let maxChars = Math.floor(availW / (f * charWidthMultiplier));
+    if (maxChars < 1) maxChars = 1;
+
+    const words = name.split(" ");
+    let lines = [];
+    let currentLine = words[0] || "";
+    let widthFits = true;
+
+    if ((words[0] || "").length > maxChars) widthFits = false;
+
+    for (let i = 1; i < words.length; i++) {
+      if (words[i].length > maxChars) widthFits = false;
+
+      if (currentLine.length + 1 + words[i].length <= maxChars) {
+        currentLine += " " + words[i];
+      } else {
+        lines.push(currentLine);
+        currentLine = words[i];
+      }
+    }
+    lines.push(currentLine);
+
+    const totalHeight = lines.length * (f * lineSpacing);
+
+    if (widthFits && totalHeight <= availH) {
+      bestFontSize = f;
+      bestLines = lines;
+      break; 
+    }
+  }
+
+  if (bestLines.length === 0) {
+    bestFontSize = minFont;
+    let maxChars = Math.floor(availW / (bestFontSize * charWidthMultiplier));
+    if (maxChars < 1) maxChars = 1;
+    
+    const words = name.split(" ");
+    let lines = [];
+    let currentLine = words[0] || "";
+    for (let i = 1; i < words.length; i++) {
+      if (currentLine.length + 1 + words[i].length <= maxChars) {
+        currentLine += " " + words[i];
+      } else {
+        lines.push(currentLine);
+        currentLine = words[i];
+      }
+    }
+    lines.push(currentLine);
+    bestLines = lines;
+  }
+
+  const lineHeight = bestFontSize * lineSpacing;
+  
+  const startY = (r.y + r.h/2) - ((bestLines.length - 1) * lineHeight) / 2 + (bestFontSize / 3);
+
+  const textHtml = bestLines.map((line, index) => 
+    `<tspan x="${r.x + r.w/2}" y="${startY + (index * lineHeight)}">${line}</tspan>`
+  ).join("");
+
+  const a = `
+  <text class="room-label" text-anchor="middle" style="font-size: ${bestFontSize}px; pointer-events: none;">
+    ${textHtml}
+  </text>
+  `;
+
   html += `<g class="room-g" data-room="${r.id}" onclick="selectRoom('${r.id}')">
     <rect class="room" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="3"/>
-    <text class="room-label" x="${r.x+r.w/2}" y="${r.y+r.h/2+4}" text-anchor="middle">${r.name}</text>
+    ${a}
   </g>`;
 });
 svg.innerHTML = html;
@@ -187,13 +296,14 @@ svg.innerHTML = html;
 function selectRoom(id){
   document.querySelectorAll(".room.selected").forEach(r=>r.classList.remove("selected"));
   document.querySelector(`[data-room="${id}"] rect.room`).classList.add("selected");
-  const r = ROOMS.find(x=>x.id===id);
+  const r = ROOMS_FLOOR1.find(x=>x.id===id);
   document.getElementById("panel").innerHTML = `
     <h2>${r.name}</h2>
     <div class="room-type">${r.type}</div>
     <div class="field"><div class="field-label">Açıklama</div><div class="field-value">${r.info}</div></div>
   `;
 }
+
 </script>
 </body>
 </html>
