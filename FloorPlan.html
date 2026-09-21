@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EE Binası — Kat Planları</title>
+<link rel="icon" type="image/png" sizes="96x96" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#171329;
+  --panel:#211a38;
+  --panel2:#292044;
+  --grid:rgba(124,90,199,0.10);
+
+  --line:#7c5ac7;
+  --line-strong:#d8c7ff;
+
+  --text:#f5f1ff;
+  --dim:#a79bbd;
+
+  --accent:#ff6b9d;
+  --accent-dim:rgba(255,107,157,0.20);
+
+  --corridor:rgba(255,196,87,0.60);
+
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f1fb; --panel:#ffffff; --panel2:#f0ecfb; --grid:rgba(124,90,199,0.08);
+    --line:#b9a4e8; --line-strong:#5a3fa0; --text:#241c3d; --dim:#6d6285;
+    --accent:#d63c78; --accent-dim:rgba(214,60,120,0.15); --corridor:rgba(200,140,20,0.5);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#171329; --panel:#211a38; --panel2:#292044; --line:#7c5ac7; --line-strong:#d8c7ff;
+  --text:#f5f1ff; --dim:#a79bbd; --accent:#ff6b9d; --accent-dim:rgba(255,107,157,0.20); --corridor:rgba(255,196,87,0.60);
+}
+
+*{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+html,body{height:100%;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;
+  background-size:28px 28px; min-height:100%;}
+header{padding:26px 32px 6px;}
+h1{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:1.45rem;margin:0 0 4px;}
+.sub{color:var(--dim);font-size:0.9rem;margin:0;}
+
+.controls{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;
+  padding:10px 32px;}
+.floor-tabs{display:flex;gap:6px;flex-wrap:wrap;}
+.floor-tab{font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:600;color:var(--dim);
+  background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 16px;cursor:pointer;
+  transition:background .12s,color .12s,border-color .12s;}
+.floor-tab:hover{border-color:var(--accent);color:var(--text);}
+.floor-tab.active{background:var(--accent);border-color:var(--accent);color:#1a1030;}
+
+.search-wrap{position:relative;min-width:220px;flex:1;max-width:320px;}
+.search-wrap input{width:100%;font-family:'IBM Plex Sans',sans-serif;font-size:0.9rem;color:var(--text);
+  background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 12px;outline:none;}
+.search-wrap input:focus{border-color:var(--accent);}
+.search-count{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:0.72rem;color:var(--dim);
+  pointer-events:none;}
+
+.layout{display:grid;grid-template-columns:1fr 300px;gap:20px;padding:12px 32px 6px;}
+.plan-wrap{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:14px;overflow-x:auto;}
+svg{width:100%;height:auto;display:block;min-width:480px;}
+.mass{fill:var(--panel);}
+.outline{fill:none;stroke:var(--line-strong);stroke-width:2;}
+.corridor{fill:none;stroke:var(--corridor);stroke-width:6;stroke-linejoin:round;}
+.corridor-center{fill:none;stroke:rgba(10,25,41,0.5);stroke-width:1;stroke-dasharray:5 4;}
+.room{fill:var(--panel2);stroke:var(--line);stroke-width:1.3;cursor:pointer;transition:fill .12s,stroke .12s,opacity .12s;}
+.room:hover{stroke:var(--accent);}
+.room.selected{fill:var(--accent-dim);stroke:var(--accent);stroke-width:2;}
+.room-g.hidden{display:none;}
+.room-label{font-family:'Space Grotesk',sans-serif;font-size:10.5px;font-weight:600;fill:var(--line-strong);
+  text-transform:uppercase;pointer-events:none;}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;
+  position:sticky;top:calc(20px + env(safe-area-inset-top,0px));align-self:start;min-height:240px;}
+.panel-empty{color:var(--dim);font-size:0.9rem;line-height:1.5;}
+.panel h2{font-family:'Space Grotesk',sans-serif;font-size:1.1rem;margin:0 0 2px;color:var(--accent);}
+.panel .room-type{color:var(--dim);font-size:0.85rem;margin-bottom:16px;}
+.field{margin-bottom:12px;}
+.field-label{font-size:0.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:2px;}
+.field-value{font-size:0.95rem;line-height:1.4;}
+.note{color:var(--dim);font-size:0.78rem;padding:0 32px 22px;max-width:680px;line-height:1.55;}
+
+footer{margin-top:24px;border-top:1px solid var(--line);padding:24px 32px calc(24px + env(safe-area-inset-bottom,0px));
+  display:flex;flex-wrap:wrap;gap:28px;justify-content:space-between;}
+footer .col h3{font-family:'Space Grotesk',sans-serif;font-size:0.85rem;color:var(--line-strong);margin:0 0 8px;}
+footer .col p, footer .col a{font-size:0.82rem;color:var(--dim);line-height:1.7;text-decoration:none;display:block;}
+footer .col a:hover{color:var(--accent);}
+footer .bottom{width:100%;text-align:center;font-size:0.75rem;color:var(--dim);margin-top:12px;}
+
+@media (max-width:760px){.layout{grid-template-columns:1fr;}.panel{position:static;}}
+</style>
+</head>
+<body>
+<header>
+  <h1>EE Binası — Kat Planları</h1>
+  <p class="sub">Bir kat seçin, aramak istediğiniz odayı yazın veya doğrudan plan üzerinden tıklayın.</p>
+</header>
+
+<div class="controls">
+  <div class="floor-tabs" id="floorTabs"></div>
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="Oda ara (isim veya numara)...">
+    <span class="search-count" id="searchCount"></span>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="plan-wrap"><svg viewBox="0 0 880 730" id="plan"></svg></div>
+  <div class="panel" id="panel"><div class="panel-empty">Bilgilerini görmek için bir odaya tıklayın.</div></div>
+</div>
+
+<footer>
+  <div class="col">
+    <h3>EE Binası</h3>
+    <p>Elektrik-Elektronik Mühendisliği Bölümü</p>
+    <p>Kat planları ve oda bilgileri</p>
+  </div>
+  <div class="col">
+    <h3>Bağlantılar</h3>
+    <a href="https://www.ee.hacettepe.edu.tr">Bölüm web sitesi</a>
+    <a href="https://github.com/HUEEOpenArchive/HUEE-Floor-Plan">GitHub repository</a>
+  </div>
+  <!--div class="bottom">© 2026 EE Binası — Tüm hakları saklıdır.</div-->
+</footer>
+
+<script>
+const FLOORS = {
+  "0": {
+    label: "-1. Kat",
+    outer: `M26,44
+    L128,44
+    L128,55
+    L135,55
+    L135,11
+    L178,11
+    L178,56
+    L192,56
+    L192,24
+    L257,24
+    L257,8
+    L279,8
+    L279,24
+    L462,24
+    L462,8
+    L484,8
+    L484,24
+    L548,24
+    L548,133
+    L586,133
+    L586,176
+    L538,176
+    L538,191
+    L568,191
+    L568,256
+    L586,256
+    L586,282
+    L568,282
+    L568,466
+    L571,466
+    L571,542
+    L457,542
+    L457,466
+    L462,466
+    L462,282
+    L446,282
+    L446,255
+    L462,255
+    L462,191
+    L489,191
+    L489,132
+    L484,132
+    L484,148
+    L462,148
+    L462,132
+    L279,132
+    L279,148
+    L257,148
+    L257,132
+    L192,132
+    L192,107
+    L128,107
+    L128,115
+    L146,115
+    L146,140
+    L128,140
+    L128,319
+    L146,319
+    L146,344
+    L128,344
+    L128,392
+    L26,392
+    L26,344
+    L10,344
+    L10,319
+    L26,319
+    L26,140
+    L10,140
+    L10,115
+    L26,115
+    Z`,
+    corridor: "M112,337 V68 H210 V115 H527 V220 H474 V457",
+    rooms: [
+      {id:"unknown10", type:"unknown", name:"Bilinmiyor", x:100,y:348,w:24,h:40, room_code:"3004", info:""},
+      {id:"HesaplamaliElektromanyetikLab", type:"Laboratuvar", name:"Hesaplamalı Elektromanyetik Laboratuvarı", x:30,y:142,w:68,h:90, room_code:"", info:""},
+      {id:"ProjeLab", type:"Laboratuvar", name:"Proje Laboratuvarı", x:30,y:234,w:68,h:80, room_code:"3002", info:""},
+      {id:"MekanikAtolyesi", type:"Atölye", name:"Mekanik Atölyesi", x:30,y:316,w:68,h:73, room_code:"3003", info:""},
+      {id:"Depo4", type:"Depo", name:"Depo 4", x:30,y:48,w:68,h:45, room_code:"3000", info:""},
+      {id:"RobotToplulugu", type:"Topluluk", name:"Robot Topluluğu (HUNROBOT)", x:30,y:95,w:68,h:45, room_code:"", info:""},
+      {id:"ErkekTuvaleti4", type:"Tuvalet", name:"Erkek Tuvaleti", x:128,y:78,w:64,h:25, room_code:"3000", info:""},
+
+      {id:"F5Esanjoru", type:"Özel", name:"F5 Eşanjörü", x:461,y:468,w:106,h:70, room_code:"unknown", info:""},
+      {id:"IONOLAB", type:"Laboratuvar", name:"İyonküre Araştırma Laboratuvarı", x:230,y:28,w:80,h:70, room_code:"4003", info:""},
+      {id:"unknown11", type:"unknown", name:"Bilinmiyor", x:195,y:28,w:33,h:30, room_code:"unknown", info:""},
+      {id:"NorobilimLab", type:"Laboratuvar", name:"Nörobilim Laboratuvarı", x:312,y:28,w:80,h:70, room_code:"4002", info:""},
+      {id:"BaskiDevreAtolyesi", type:"Atölye", name:"Baskı Devre Atölyesi", x:394,y:28,w:74,h:70, room_code:"4001", info:""},
+      {id:"Depo3", type:"Depo", name:"Depo 3", x:470,y:28,w:75,h:70, room_code:"4000\\A", info:""},
+      {id:"ErkekTuvaleti5", type:"Tuvalet", name:"Erkek Tuvaleti", x:492,y:131,w:25,h:60, room_code:"4106", info:""},
+      {id:"unknown12", type:"unknown", name:"Bilinmiyor", x:538,y:194,w:27,h:30, room_code:"5004", info:""},
+      {id:"unknown13", type:"unknown", name:"Bilinmiyor", x:538,y:226,w:27,h:30, room_code:"5006", info:""},
+      {id:"ElektrikMakineleriLab", type:"Laboratuvar", name:"Elektrik Makineleri Laboratuvarı", x:485,y:258,w:80,h:180, room_code:"5008", info:""},
+      {id:"ElektrikPanosu", type:"Özel", name:"Elektrik Panosu", x:515,y:440,w:50,h:26, room_code:"E101", info:""},
+    ]
+  },
+  "1": {
+    label: "Zemin Kat",
+    outer: `M26,44
+    L128,44
+    L128,55
+    L135,55
+    L135,11
+    L178,11
+    L178,56
+    L192,56
+    L192,24
+    L257,24
+    L257,8
+    L279,8
+    L279,24
+    L462,24
+    L462,8
+    L484,8
+    L484,24
+    L548,24
+    L548,133
+    L586,133
+    L586,176
+    L538,176
+    L538,191
+    L568,191
+    L568,256
+    L586,256
+    L586,282
+    L568,282
+    L568,466
+    L793,466
+    L793,488
+    L818,488
+    L818,542
+    L793,542
+    L793,585
+    L654,585
+    L654,606
+    L595,606
+    L595,585
+    L571,585
+    L571,676
+    L457,676
+    L457,466
+    L462,466
+    L462,282
+    L446,282
+    L446,255
+    L462,255
+    L462,191
+    L489,191
+    L489,132
+    L484,132
+    L484,148
+    L462,148
+    L462,132
+    L279,132
+    L279,148
+    L257,148
+    L257,132
+    L192,132
+    L192,107
+    L128,107
+    L128,115
+    L146,115
+    L146,140
+    L128,140
+    L128,319
+    L146,319
+    L146,344
+    L128,344
+    L128,392
+    L26,392
+    L26,344
+    L10,344
+    L10,319
+    L26,319
+    L26,140
+    L10,140
+    L10,115
+    L26,115
+    Z`,
+    corridor: "M118,337 V68 H220 V115 H527 V228 H556 V528 M556,525 H790",
+    rooms: [
+      {id:"RobotikLab", type:"Laboratuvar", name:"Robotik Laboratuvarı", x:30,y:348,w:94,h:40, room_code:"unknown", info:"E9 dersliği"},
+      {id:"ElektronikLab", type:"Laboratuvar", name:"Elektronik Laboratuvarı", x:30,y:112,w:78,h:234, room_code:"3108", info:""},
+      {id:"IEEEStudentBranch", type:"Topluluk Odası", name:"IEEE Öğrenci Kolu", x:30,y:48,w:42,h:30, room_code:"3104", info:"Dr. Emre Efendi'nin ofisi birinci kattadır."},
+      {id:"unknown9", type:"unknown", name:"Bilinmiyor", x:30,y:80,w:42,h:30, room_code:"3106", info:""},
+      {id:"KadinTuvaleti3", type:"Tuvalet", name:"Kadın Tuvaleti", x:128,y:78,w:64,h:25, room_code:"3101", info:""},
+      {id:"KonferansSalonu", type:"Özel Amaçlı Salon", name:"Konferans Salonu", x:461,y:551,w:106,h:122, room_code:"unknown", info:""},
+      {id:"E1", type:"Derslik", name:"E1", x:261,y:28,w:80,h:70, room_code:"unknown", info:""},
+      {id:"E2", type:"Derslik", name:"E2", x:344,y:28,w:80,h:70, room_code:"unknown", info:""},
+      {id:"E3", type:"Derslik", name:"E3", x:427,y:28,w:118,h:70, room_code:"unknown", info:""},
+      {id:"ErkekTuvaleti3", type:"Tuvalet", name:"Erkek Tuvaleti", x:492,y:131,w:25,h:60, room_code:"4106", info:""},
+      {id:"EmreOzturk", type:"Ofis", name:"Emre Öztürk", x:465,y:194,w:40,h:30, room_code:"", info:""},
+      {id:"BoraDinc", type:"Ofis", name:"Bora Dinç", x:465,y:226,w:40,h:30, room_code:"", info:""},
+      {id:"E4", type:"Derslik", name:"E4", x:465,y:258,w:80,h:230, room_code:"unknown", info:""},
+      {id:"KonferansSalonuReji", type:"Özel", name:"Konferans Salonu Reji Odası", x:465,y:492,w:26,h:56, room_code:"unknown", info:""},
+      {id:"KlimaOdasi", type:"Özel", name:"Klima Odası", x:597,y:565,w:27,h:16, room_code:"E101", info:""},
+      {id:"KablosuzHaberlesmeArastirmaLab", type:"Laboratuvar", name:"Kablosuz Haberleşme Araştırma Laboratuvarı", x:655,y:468,w:56,h:36, room_code:"E106", info:""},
+      {id:"BiyomekanikArastirmaLab", type:"Laboratuvar", name:"Biyomekanik Elektroniği Araştırma Laboratuvarı", x:713,y:468,w:77,h:36, room_code:"E107", info:""},
+      {id:"SinyalIslemeLab", type:"Laboratuvar", name:"Sinyal İşleme Araştırma Laboratuvarı", x:713,y:545,w:77,h:36, room_code:"E108", info:""},
+      {id:"MitsubishiRobotikOtomasyonLab", type:"Laboratuvar", name:"Mitsubishi Robotik ve Otomasyon Laboratuvarı", x:655,y:545,w:56,h:36, room_code:"E109", info:""}
+    ]
+  },
+  "2": {
+    label: "1. Kat",
+    outer: `M26,44
+    L128,44
+    L128,55
+    L135,55
+    L135,11
+    L178,11
+    L178,56
+    L192,56
+    L192,24
+    L257,24
+    L257,8
+    L279,8
+    L279,24
+    L462,24
+    L462,8
+    L484,8
+    L484,24
+    L548,24
+    L548,133
+    L586,133
+    L586,176
+    L538,176
+    L538,191
+    L568,191
+    L568,256
+    L586,256
+    L586,282
+    L568,282
+    L568,466
+    L793,466
+    L793,488
+    L818,488
+    L818,542
+    L793,542
+    L793,585
+    L654,585
+    L654,606
+    L595,606
+    L595,585
+    L571,585
+    L571,676
+    L457,676
+    L457,466
+    L462,466
+    L462,282
+    L446,282
+    L446,255
+    L462,255
+    L462,191
+    L489,191
+    L489,132
+    L484,132
+    L484,148
+    L462,148
+    L462,132
+    L279,132
+    L279,148
+    L257,148
+    L257,132
+    L192,132
+    L192,107
+    L128,107
+    L128,115
+    L146,115
+    L146,140
+    L128,140
+    L128,319
+    L146,319
+    L146,344
+    L128,344
+    L128,392
+    L26,392
+    L26,344
+    L10,344
+    L10,319
+    L26,319
+    L26,140
+    L10,140
+    L10,115
+    L26,115
+    Z`,
+    corridor: "M118,337 V68 H220 V115 H527 V528 M527,525 H790",
+    rooms: [
+      {id:"E9", type:"Derslik", name:"E9", x:30,y:348,w:94,h:40, room_code:"unknown", info:"E9 dersliği"},
+      {id:"E8", type:"Derslik", name:"E8", x:30,y:230,w:78,h:115, room_code:"unknown", info:"E8 dersliği"},
+      {id:"E7", type:"Derslik", name:"E7", x:30,y:112,w:78,h:115, room_code:"unknown", info:"E7 dersliği"},
+      {id:"unknown1", type:"unknown", name:"Bilinmiyor", x:30,y:80,w:42,h:30, room_code:"3206", info:""},
+      {id:"EmreEfendi", type:"Ofis", name:"Dr. Emre Efendi", x:30,y:48,w:42,h:30, room_code:"3204", info:"Dr. Emre Efendi'nin ofisi birinci kattadır."},
+      {id:"ErkekTuvaleti1", type:"Tuvalet", name:"Erkek Tuvaleti", x:128,y:78,w:64,h:25, room_code:"3201", info:"Birinci kattaki erkek tuvaleti."},
+      {id:"ModellemeLab2", type:"Laboratuvar", name:"Modelleme ve Benzetim Laboratuvarı 2", x:461,y:551,w:106,h:122, room_code:"unknown", info:""},
+      {id:"AlperenBerber", type:"Ofis", name:"Alperen Berber", x:195,y:28,w:30,h:28, room_code:"4214", info:"Alperen Berber'in ofisi."},
+      {id:"FurkanSabriDipi", type:"Ofis", name:"Furkan Sabri Dipi", x:228,y:28,w:30,h:28, room_code:"4210", info:"Furkan Sabri Dipi'nin ofisi."},
+      {id:"E6", type:"Derslik", name:"E6", x:261,y:28,w:80,h:70, room_code:"unknown", info:"E6 dersliği"},
+      {id:"SeminerSalonu", type:"Derslik", name:"Seminer Salonu", x:344,y:28,w:80,h:70, room_code:"unknown", info:"Seminer salonu"},
+      {id:"BilgisayarLab1", type:"Laboratuvar", name:"Bilgisayar Laboratuvarı 1", x:427,y:28,w:118,h:70, room_code:"unknown", info:""},
+      {id:"ErkekPersonelTuvaleti1", type:"Tuvalet", name:"Erkek Personel Tuvaleti", x:492,y:131,w:25,h:60, room_code:"4201", info:"Birinci kattaki erkek tuvaleti."},
+      {id:"Bursiyerler", type:"Özel", name:"Bursiyerler", x:465,y:194,w:52,h:40, room_code:"5201", info:""},
+      {id:"MikroveNanoIslemciSistemlerLab", type:"Laboratuvar", name:"Mikro ve Nano İşlemci Sistemler Laboratuvarı", x:465,y:236,w:52,h:125, room_code:"unknown", info:""},
+      {id:"SayisalSistemlerLab", type:"Laboratuvar", name:"Sayısal Sistemler Laboratuvarı", x:465,y:364,w:52,h:125, room_code:"5205", info:""},
+      {id:"Depo2", type:"Depo", name:"Depo 2", x:465,y:492,w:52,h:56, room_code:"unknown", info:""},
+      {id:"CigdemSeckinGurel", type:"Ofis", name:"Prof. Dr. Çiğdem Seçkin Gürel", x:538,y:194,w:27,h:40, room_code:"5204", info:""},
+      {id:"MustafaEminCelik_ZiyaTunaBolukbasi", type:"Ofis", name:"Mustafa Emin Çelik - Ziya Tuna Bölükbaşı", x:538,y:236,w:27,h:36, room_code:"5206", info:""},
+      {id:"AlpDemirel_ErdemGoral", type:"Ofis", name:"Alp Demirel - Erdem Göral", x:538,y:274,w:27,h:36, room_code:"5208", info:""},
+      {id:"IsmailUyanik", type:"Ofis", name:"Dr. İsmail Uyanık", x:538,y:312,w:27,h:36, room_code:"5210", info:""},
+      {id:"unknown2", type:"unknown", name:"Bilinmiyor", x:538,y:350,w:27,h:36, room_code:"5212", info:""},
+      {id:"BerkanDulek", type:"Ofis", name:"Dr. Berkan Dülek", x:538,y:388,w:27,h:36, room_code:"5214", info:""},
+      {id:"DeryaAltunay", type:"Ofis", name:"Yrd. Doç. Dr. Derya Altunay", x:538,y:426,w:27,h:36, room_code:"5216", info:""},
+      {id:"unknown3", type:"unknown", name:"Bilinmiyor", x:538,y:464,w:27,h:36, room_code:"", info:""},
+      {id:"KadinTuvaleti1", type:"Tuvalet", name:"Kadın Tuvaleti", x:568,y:468,w:27,h:36, room_code:"E202", info:""},
+      {id:"unknown4", type:"unknown", name:"Bilinmiyor", x:597,y:468,w:27,h:36, room_code:"E203", info:""},
+      {id:"ErkekTuvaleti2", type:"Tuvalet", name:"Erkek Tuvaleti", x:626,y:468,w:27,h:36, room_code:"E204", info:""},
+      {id:"unknown5", type:"unknown", name:"Bilinmiyor", x:597,y:565,w:27,h:16, room_code:"E201", info:""},
+      {id:"OsmanBulentTor", type:"Ofis", name:"Doç. Dr. Osman Bülent Tör", x:655,y:468,w:27,h:36, room_code:"E207", info:""},
+      {id:"IsikCadirci", type:"Ofis", name:"Prof. Dr. Işık Çadırcı", x:684,y:468,w:27,h:36, room_code:"E208", info:""},
+      {id:"GucElektronigiArastirmaLab", type:"Laboratuvar", name:"Güç Elektroniği Araştırma Laboratuvarı", x:713,y:468,w:77,h:36, room_code:"E209", info:""},
+      {id:"BiyomedikalArastirmaLab", type:"Laboratuvar", name:"Biyomedikal Araştırma Laboratuvarı", x:713,y:545,w:77,h:36, room_code:"E210", info:""},
+      {id:"ElektromanyetikArastirmaLab", type:"Laboratuvar", name:"Elektromanyetik Araştırma Laboratuvarı", x:655,y:545,w:56,h:36, room_code:"E211", info:""}
+    ]
+  },
+  "3": {
+    label: "2. Kat",
+    outer: `M26,44
+    L128,44
+    L128,55
+    L135,55
+    L135,11
+    L178,11
+    L178,56
+    L192,56
+    L192,24
+    L257,24
+    L257,8
+    L279,8
+    L279,24
+    L462,24
+    L462,8
+    L484,8
+    L484,24
+    L548,24
+    L548,133
+    L586,133
+    L586,176
+    L538,176
+    L538,191
+    L568,191
+    L568,256
+    L586,256
+    L586,282
+    L568,282
+    L568,466
+    L793,466
+    L793,488
+    L818,488
+    L818,542
+    L793,542
+    L793,585
+    L654,585
+    L654,606
+    L595,606
+    L595,585
+    L571,585
+    L571,676
+    L457,676
+    L457,542
+    L401,542
+    L401,488
+    L446,488
+    L446,466
+    L462,466
+    L462,282
+    L446,282
+    L446,255
+    L462,255
+    L462,191
+    L489,191
+    L489,132
+    L484,132
+    L484,148
+    L462,148
+    L462,132
+    L279,132
+    L279,148
+    L257,148
+    L257,132
+    L192,132
+    L192,107
+    L128,107
+    L128,115
+    L146,115
+    L146,140
+    L128,140
+    L128,319
+    L146,319
+    L146,344
+    L128,344
+    L128,392
+    L26,392
+    L26,344
+    L10,344
+    L10,319
+    L26,319
+    L26,140
+    L10,140
+    L10,115
+    L26,115
+    Z`,
+    corridor: "M118,337 V68 H220 V115 H527 V333 M527,330 H516 V528 M516,525 H790",
+    rooms: [
+      {id:"TelekomunikasyonLab", type:"Laboratuvar", name:"Telekomünikasyon Laboratuvarı", x:30,y:348,w:94,h:40, room_code:"3314", info:""},
+      {id:"DenetimSistemleriLab", type:"Laboratuvar", name:"Denetim Sistemleri Laboratuvarı", x:30,y:112,w:78,h:170, room_code:"unknown", info:""},
+      {id:"DenetimSistemleriArastirmaLab", type:"Laboratuvar", name:"Denetim Sistemleri Araştırma Laboratuvarı", x:30,y:284,w:78,h:30, room_code:"3310", info:""},
+      {id:"TelekomunikasyonArastirmaLab", type:"Laboratuvar", name:"Telekomünikasyon Araştırma Laboratuvarı", x:30,y:316,w:78,h:30, room_code:"3312", info:""},
+      {id:"RasimDogan", type:"Ofis", name:"Doç. Dr. Rasim Doğan", x:30,y:80,w:42,h:30, room_code:"3304\A", info:""},
+      {id:"UgurBaysal", type:"Ofis", name:"Prof. Dr. Uğur Baysal", x:30,y:48,w:42,h:30, room_code:"3304", info:""},
+      {id:"KadinTuvaleti2", type:"Tuvalet", name:"Kadın Tuvaleti", x:128,y:78,w:64,h:25, room_code:"3301", info:""},
+      {id:"ModellemeLab1", type:"Laboratuvar", name:"Modelleme ve Benzetim Laboratuvarı 1", x:461,y:551,w:106,h:122, room_code:"5320", info:""},
+      {id:"OnurcanYilmaz", type:"Ofis", name:"Onurcan Yılmaz", x:195,y:28,w:30,h:28, room_code:"4312", info:""},
+      {id:"ErenCemGoksuluk", type:"Ofis", name:"Eren Cem Göksülük", x:228,y:28,w:30,h:28, room_code:"4310", info:""},
+      {id:"MikrodalgaveAntenLab", type:"Laboratuvar", name:"Mikrodalga ve Anten Laboratuvarı", x:261,y:28,w:80,h:70, room_code:"4308", info:""},
+      {id:"DinlenmeSalonu1", type:"Özel Amaçlı Salon", name:"Dinlenme Salonu 1", x:344,y:28,w:80,h:70, room_code:"4306", info:""},
+      {id:"ToplantiSalonu1", type:"Özel Amaçlı Salon", name:"Toplantı Salonu 1", x:427,y:28,w:58,h:70, room_code:"4304\\A", info:""},
+      {id:"OgrenciCalismaSalonu", type:"Özel Amaçlı Salon", name:"Öğrenci Çalışma Salonu", x:487,y:28,w:58,h:70, room_code:"unknown", info:""},
+      {id:"KadinPersonelTuvaleti1", type:"Tuvalet", name:"Kadın Personel Tuvaleti", x:492,y:131,w:25,h:60, room_code:"4301", info:""},
+      {id:"UcboyutluYaziciOdasi_BilgisayarOdasi", type:"Özel", name:"Üç Boyutlu Yazıcı Odası - Bilgisayar Odası", x:465,y:194,w:52,h:60, room_code:"5201", info:""},
+      {id:"ToplantiSalonu2", type:"Özel Amaçlı Salon", name:"Toplantı Salonu 2", x:465,y:256,w:52,h:60, room_code:"5203", info:""},
+      {id:"YildizCavdar", type:"Ofis", name:"Yıldız Çavdar", x:465,y:365,w:42,h:24, room_code:"5305", info:""},
+      {id:"unknown6", type:"unknown", name:"Bilinmiyor", x:465,y:391,w:42,h:24, room_code:"5307", info:""},
+      {id:"AdemYilmaz", type:"Ofis", name:"Adem Yılmaz", x:465,y:417,w:42,h:24, room_code:"5309", info:""},
+      {id:"unknown7", type:"unknown", name:"Bilinmiyor", x:465,y:443,w:42,h:24, room_code:"5311", info:""},
+      {id:"Mutfak1", type:"Mutfak", name:"Mutfak", x:538,y:234,w:27,h:20, room_code:"5304", info:""},
+      {id:"BurakAlpInan", type:"Ofis", name:"Burak Alp İnan", x:538,y:256,w:27,h:25, room_code:"5306", info:""},
+      {id:"MehmetGurbuz", type:"Ofis", name:"Mehmet Gürbüz", x:538,y:283,w:27,h:25, room_code:"5308", info:""},
+      {id:"OzgurTugrul", type:"Ofis", name:"Özgür Tuğrul", x:538,y:310,w:27,h:25, room_code:"5310", info:""},
+      {id:"EnginOzcan", type:"Ofis", name:"Engin Özcan", x:538,y:337,w:27,h:25, room_code:"5312", info:""},
+      {id:"BirsenSaka", type:"Ofis", name:"Prof Dr. Birsen Saka", x:525,y:364,w:40,h:34, room_code:"5314", info:""},
+      {id:"BarisAkcay", type:"Ofis", name:"Barış Akçay", x:525,y:400,w:40,h:34, room_code:"5316", info:""},
+      {id:"Depo1", type:"Depo", name:"Depo 1", x:525,y:436,w:40,h:30, room_code:"5318", info:""},
+      {id:"KadinPersonelTuvaleti2", type:"Tuvalet", name:"Kadın Personel Tuvaleti", x:568,y:468,w:27,h:36, room_code:"E302", info:""},
+      {id:"EngelliTuvaleti", type:"Tuvalet", name:"Engelli Tuvaleti", x:597,y:468,w:27,h:36, room_code:"E303", info:""},
+      {id:"ErkekPersonelTuvaleti2", type:"Tuvalet", name:"Erkek Personel Tuvaleti", x:626,y:468,w:27,h:36, room_code:"E304", info:""},
+      {id:"unknown8", type:"unknown", name:"Bilinmiyor", x:597,y:565,w:27,h:16, room_code:"E301", info:""},
+      {id:"AliZiyaAlkar", type:"Ofis", name:"Prof. Dr. Ali Ziya Alkar", x:655,y:468,w:25,h:36, room_code:"E307", info:""},
+      {id:"AtilaYilmaz", type:"Ofis", name:"Prof. Dr. Atila Yılmaz", x:682,y:468,w:25,h:36, room_code:"E308", info:""},
+      {id:"EmreAktas", type:"Ofis", name:"Prof. Dr. Emre Aktaş", x:709,y:468,w:25,h:36, room_code:"E309", info:""},
+      {id:"YakupOzkazanc", type:"Ofis", name:"Yrd. Droç. Dr. Yakup Özkazanç", x:736,y:468,w:25,h:36, room_code:"E310", info:""},
+      {id:"FezaArikan", type:"Ofis", name:"Prof. Dr. Feza Arıkan", x:763,y:468,w:25,h:36, room_code:"E311", info:""},
+      {id:"DincerGokcen", type:"Ofis", name:"Prof. Dr. Dinçer Gökçen", x:763,y:545,w:25,h:36, room_code:"E312", info:""},
+      {id:"OzlemOzgun", type:"Ofis", name:"Prof. Dr. Özlem Özgün", x:736,y:545,w:25,h:36, room_code:"E313", info:""},
+      {id:"GurhanBulu", type:"Ofis", name:"Dr. Gürhan Bulu", x:709,y:545,w:25,h:36, room_code:"E314", info:""},
+      {id:"SolenKumbayYildiz", type:"Ofis", name:"Doç. Dr. Şölen Kumbay Yıldız", x:682,y:545,w:25,h:36, room_code:"E315", info:""},
+      {id:"OnurKulce", type:"Ofis", name:"Dr. Onur Külçe", x:655,y:545,w:25,h:36, room_code:"E316", info:""},
+    ]
+  },
+  /* ,"2": { label:"2. Kat", outer:`...`, corridor:"...", rooms:[ ... ] } */
+};
+
+let currentFloor = Object.keys(FLOORS)[0];
+
+function buildRoomLabel(r){
+  const name = r.name || "";
+  const minFont = 3, maxFont = 20, charWidthMultiplier = 0.6, lineSpacing = 1.2, textMargin = 1;
+  let availW = r.w - (textMargin*2); let availH = r.h - (textMargin*2);
+  if (availW <= 0) availW = r.w; if (availH <= 0) availH = r.h;
+  let bestFontSize = minFont, bestLines = [];
+  for (let f = maxFont; f >= minFont; f -= 1) {
+    let maxChars = Math.floor(availW / (f * charWidthMultiplier));
+    if (maxChars < 1) maxChars = 1;
+    const words = name.split(" ");
+    let lines = []; let currentLine = words[0] || ""; let widthFits = true;
+    if ((words[0]||"").length > maxChars) widthFits = false;
+    for (let i = 1; i < words.length; i++) {
+      if (words[i].length > maxChars) widthFits = false;
+      if (currentLine.length + 1 + words[i].length <= maxChars) currentLine += " " + words[i];
+      else { lines.push(currentLine); currentLine = words[i]; }
+    }
+    lines.push(currentLine);
+    const totalHeight = lines.length * (f * lineSpacing);
+    if (widthFits && totalHeight <= availH) { bestFontSize = f; bestLines = lines; break; }
+  }
+  if (bestLines.length === 0) {
+    bestFontSize = minFont;
+    let maxChars = Math.floor(availW / (bestFontSize * charWidthMultiplier));
+    if (maxChars < 1) maxChars = 1;
+    const words = name.split(" ");
+    let lines = []; let currentLine = words[0] || "";
+    for (let i = 1; i < words.length; i++) {
+      if (currentLine.length + 1 + words[i].length <= maxChars) currentLine += " " + words[i];
+      else { lines.push(currentLine); currentLine = words[i]; }
+    }
+    lines.push(currentLine);
+    bestLines = lines;
+  }
+  const lineHeight = bestFontSize * lineSpacing;
+  const startY = (r.y + r.h/2) - ((bestLines.length - 1) * lineHeight)/2 + (bestFontSize/3);
+  const textHtml = bestLines.map((line, i) =>
+    `<tspan x="${r.x + r.w/2}" y="${startY + (i*lineHeight)}">${line}</tspan>`).join("");
+  return `<text class="room-label" text-anchor="middle" style="font-size:${bestFontSize}px;pointer-events:none;">${textHtml}</text>`;
+}
+
+function renderFloor(key){
+  currentFloor = key;
+  const floor = FLOORS[key];
+  const svg = document.getElementById("plan");
+  let html = `
+    <path class="mass" d="${floor.outer}"/>
+    <path class="outline" d="${floor.outer}"/>
+    <path class="corridor" d="${floor.corridor}"/>
+    <path class="corridor-center" d="${floor.corridor}"/>
+  `;
+  floor.rooms.forEach(r => {
+    html += `<g class="room-g" data-room="${r.id}" data-search="${(r.name+" "+(r.room_code||"")).toLowerCase()}" onclick="selectRoom('${r.id}')">
+      <rect class="room" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="3"/>
+      ${buildRoomLabel(r)}
+    </g>`;
+  });
+  svg.innerHTML = html;
+  document.getElementById("panel").innerHTML = `<div class="panel-empty">Bilgilerini görmek için bir odaya tıklayın.</div>`;
+
+  document.querySelectorAll(".floor-tab").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.floor === key);
+  });
+
+  applySearch();
+}
+
+function selectRoom(id){
+  document.querySelectorAll(".room.selected").forEach(r=>r.classList.remove("selected"));
+  const target = document.querySelector(`[data-room="${id}"] rect.room`);
+  if (target) target.classList.add("selected");
+  const r = FLOORS[currentFloor].rooms.find(x=>x.id===id);
+  if (!r) return;
+  document.getElementById("panel").innerHTML = `
+    <h2>${r.name}</h2>
+    <div class="room-type">${r.type}${r.room_code && r.room_code!=="unknown" ? " · " + r.room_code : ""}</div>
+    <div class="field"><div class="field-label">Açıklama</div><div class="field-value">${r.info || "—"}</div></div>
+  `;
+}
+
+function applySearch(){
+  const q = document.getElementById("searchInput").value.trim().toLowerCase();
+  const groups = document.querySelectorAll(".room-g");
+  let visibleCount = 0;
+  groups.forEach(g=>{
+    const matches = q === "" || g.dataset.search.includes(q);
+    g.classList.toggle("hidden", !matches);
+    if (matches) visibleCount++;
+  });
+  const counter = document.getElementById("searchCount");
+  counter.textContent = q === "" ? "" : `${visibleCount} sonuç`;
+}
+
+function buildTabs(){
+  const wrap = document.getElementById("floorTabs");
+  wrap.innerHTML = Object.keys(FLOORS).map(key =>
+    `<button class="floor-tab" data-floor="${key}" onclick="renderFloor('${key}')">${FLOORS[key].label}</button>`
+  ).join("");
+}
+
+document.getElementById("searchInput").addEventListener("input", applySearch);
+
+buildTabs();
+renderFloor(currentFloor);
+</script>
+</body>
+</html>
