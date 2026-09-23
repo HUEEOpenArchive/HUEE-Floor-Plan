@@ -10,38 +10,29 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#171329;
-  --panel:#211a38;
-  --panel2:#292044;
-  --grid:rgba(124,90,199,0.10);
+  --bg:#f4f1fb;
+  --panel:#ffffff;
+  --panel2:#f0ecfb;
+  --grid:rgba(124,90,199,0.08);
 
-  --line:#7c5ac7;
-  --line-strong:#d8c7ff;
+  --line:#c3b2ea;
+  --line-strong:#5a3fa0;
 
-  --text:#f5f1ff;
-  --dim:#a79bbd;
+  --text:#241c3d;
+  --dim:#6d6285;
 
-  --accent:#ff6b9d;
-  --accent-dim:rgba(255,107,157,0.20);
+  --accent:#d63c78;
+  --accent-dim:rgba(214,60,120,0.15);
 
-  --corridor:rgba(255,196,87,0.60);
+  --fire:#c85a1c;
+  --fire-dim:rgba(200,90,28,0.15);
+
+  --corridor:rgba(200,140,20,0.55);
 
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
-@media (prefers-color-scheme: light){
-  :root:not([data-theme="dark"]){
-    --bg:#f4f1fb; --panel:#ffffff; --panel2:#f0ecfb; --grid:rgba(124,90,199,0.08);
-    --line:#b9a4e8; --line-strong:#5a3fa0; --text:#241c3d; --dim:#6d6285;
-    --accent:#d63c78; --accent-dim:rgba(214,60,120,0.15); --corridor:rgba(200,140,20,0.5);
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#171329; --panel:#211a38; --panel2:#292044; --line:#7c5ac7; --line-strong:#d8c7ff;
-  --text:#f5f1ff; --dim:#a79bbd; --accent:#ff6b9d; --accent-dim:rgba(255,107,157,0.20); --corridor:rgba(255,196,87,0.60);
-}
-
 *{box-sizing:border-box;}
 html{scroll-padding-top:env(safe-area-inset-top,0px);}
 html,body{height:100%;}
@@ -80,6 +71,26 @@ svg{width:100%;height:auto;display:block;min-width:480px;}
 .room-g.hidden{display:none;}
 .room-label{font-family:'Space Grotesk',sans-serif;font-size:10.5px;font-weight:600;fill:var(--line-strong);
   text-transform:uppercase;pointer-events:none;}
+
+/* --- Lejant & kat sembolleri (merdiven / yangın merdiveni / asansör / giriş) --- */
+.feature-icon{pointer-events:none;}
+.feature-icon .fi-bg{fill:var(--panel);stroke:var(--line-strong);stroke-width:1;}
+.feature-icon .fi-mark{fill:none;stroke:var(--line-strong);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.feature-icon.fire .fi-bg{stroke:var(--fire);}
+.feature-icon.fire .fi-mark{stroke:var(--fire);}
+.feature-icon.fire .fi-fill{fill:var(--fire);}
+.feature-icon.elevator .fi-fill{fill:var(--line-strong);}
+.feature-icon.entrance .fi-bg{stroke:var(--accent);}
+.feature-icon.entrance .fi-mark{stroke:var(--accent);}
+
+/* Kata özel serbest metin/etiketler */
+.floor-note{font-family:'IBM Plex Sans',sans-serif;fill:var(--dim);pointer-events:none;}
+.floor-note.strong{fill:var(--line-strong);font-family:'Space Grotesk',sans-serif;font-weight:600;}
+
+.legend .legend-bg{fill:var(--panel);stroke:var(--line);stroke-width:1;}
+.legend .legend-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:11.5px;fill:var(--line-strong);}
+.legend .legend-label{font-family:'IBM Plex Sans',sans-serif;font-size:10.5px;fill:var(--text);}
+
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;
   position:sticky;top:calc(20px + env(safe-area-inset-top,0px));align-self:start;min-height:240px;}
 .panel-empty{color:var(--dim);font-size:0.9rem;line-height:1.5;}
@@ -166,9 +177,20 @@ const FLOORS = {
     L586,282
     L568,282
     L568,466
+    L793,466
+    L793,488
+    L818,488
+    L818,542
+    L793,542
+    L793,585
+    L654,585
+    L654,606
+    L595,606
+    L595,585
+    L571,585
     L571,466
-    L571,542
-    L457,542
+    L571,543
+    L457,543
     L457,466
     L462,466
     L462,282
@@ -209,6 +231,16 @@ const FLOORS = {
     L26,115
     Z`,
     corridor: "M112,337 V68 H210 V115 H527 V220 H474 V457",
+    features: [
+      { type:"stairs", x:157, y:35 },
+      { type:"stairs", x:565, y:156 },
+      { type:"stairs", x:639, y:564 },
+      // { type:"fire-escape", x:804, y:516 },
+      { type:"elevator", x:610, y:554 }
+    ],
+    texts: [
+      // { x:40, y:30, text:"Kuzey", size:11, anchor:"start" }
+    ],
     rooms: [
       {id:"unknown10", type:"unknown", name:"Bilinmiyor", x:100,y:348,w:24,h:40, room_code:"3004", info:""},
       {id:"HesaplamaliElektromanyetikLab", type:"Laboratuvar", name:"Hesaplamalı Elektromanyetik Laboratuvarı", x:30,y:142,w:68,h:90, room_code:"", info:""},
@@ -315,6 +347,19 @@ const FLOORS = {
     L26,115
     Z`,
     corridor: "M118,337 V68 H220 V115 H527 V228 H556 V528 M556,525 H790",
+    features: [
+      { type:"entrance", x:226, y:42 },
+      { type:"entrance", x:625, y:480 },
+      { type:"stairs", x:157, y:35 },
+      { type:"stairs", x:565, y:156 },
+      { type:"stairs", x:639, y:564 },
+      { type:"fire-escape", x:804, y:516 },
+      { type:"elevator", x:610, y:554 },
+      // { type:"entrance", x:18, y:392 }
+    ],
+    texts: [
+      // { x:20, y:410, text:"Ana Giriş", size:11, anchor:"start" }
+    ],
     rooms: [
       {id:"RobotikLab", type:"Laboratuvar", name:"Robotik Laboratuvarı", x:30,y:348,w:94,h:40, room_code:"unknown", info:"E9 dersliği"},
       {id:"ElektronikLab", type:"Laboratuvar", name:"Elektronik Laboratuvarı", x:30,y:112,w:78,h:234, room_code:"3108", info:""},
@@ -421,6 +466,16 @@ const FLOORS = {
     L26,115
     Z`,
     corridor: "M118,337 V68 H220 V115 H527 V528 M527,525 H790",
+    features: [
+      { type:"stairs", x:157, y:35 },
+      { type:"stairs", x:565, y:156 },
+      { type:"stairs", x:639, y:564 },
+      { type:"fire-escape", x:804, y:516 },
+      { type:"elevator", x:610, y:554 }
+    ],
+    texts: [
+      // { x:40, y:30, text:"1. Kat", size:11, anchor:"start" }
+    ],
     rooms: [
       {id:"E9", type:"Derslik", name:"E9", x:30,y:348,w:94,h:40, room_code:"unknown", info:"E9 dersliği"},
       {id:"E8", type:"Derslik", name:"E8", x:30,y:230,w:78,h:115, room_code:"unknown", info:"E8 dersliği"},
@@ -546,6 +601,17 @@ const FLOORS = {
     L26,115
     Z`,
     corridor: "M118,337 V68 H220 V115 H527 V333 M527,330 H516 V528 M516,525 H790",
+    features: [
+      { type:"entrance", x:425, y:515 },
+      { type:"stairs", x:157, y:35 },
+      { type:"stairs", x:565, y:156 },
+      { type:"stairs", x:639, y:564 },
+      { type:"fire-escape", x:804, y:516 },
+      { type:"elevator", x:610, y:554 }
+    ],
+    texts: [
+      // { x:40, y:30, text:"2. Kat", size:11, anchor:"start" }
+    ],
     rooms: [
       {id:"TelekomunikasyonLab", type:"Laboratuvar", name:"Telekomünikasyon Laboratuvarı", x:30,y:348,w:94,h:40, room_code:"3314", info:""},
       {id:"DenetimSistemleriLab", type:"Laboratuvar", name:"Denetim Sistemleri Laboratuvarı", x:30,y:112,w:78,h:170, room_code:"unknown", info:""},
@@ -592,10 +658,52 @@ const FLOORS = {
       {id:"OnurKulce", type:"Ofis", name:"Dr. Onur Külçe", x:655,y:545,w:25,h:36, room_code:"E316", info:""},
     ]
   },
+  "4": {
+    label: "3. Kat",
+    outer: `M818,466
+    L818,542
+    L793,542
+    L793,585
+    L654,585
+    L654,606
+    L595,606
+    L595,585
+    L571,585
+    L571,676
+    L457,676
+    L457,542
+    L565,542
+    L565,466
+    Z`,
+    corridor: "M582,560 V525 H790",
+    features: [
+      { type:"fire-escape", x:804, y:516 },
+      { type:"stairs", x:639, y:564 },
+      { type:"elevator", x:610, y:554 }
+    ],
+    texts: [
+      // { x:600, y:480, text:"3. Kat", size:11, anchor:"start" }
+    ],
+    rooms: [
+      {id:"unknown", type:"unknown", name:"Bilinmiyor", x:568,y:468,w:27,h:36, room_code:"unknown", info:""},
+      {id:"unknown", type:"unknown", name:"Bilinmiyor", x:597,y:468,w:27,h:36, room_code:"unknown", info:""},
+      {id:"unknown", type:"unknown", name:"Bilinmiyor", x:626,y:468,w:27,h:36, room_code:"unknown", info:""},
+      {id:"unknown8", type:"unknown", name:"Bilinmiyor", x:597,y:565,w:27,h:16, room_code:"unknown", info:""},
+      {id:"Mutfak2", type:"Mutfak", name:"Mutfak", x:655,y:468,w:25,h:36, room_code:"E407", info:""},
+      {id:"Sekreterlik", type:"Ofis", name:"Sekreterlik", x:682,y:468,w:52,h:36, room_code:"4308", info:""},
+      {id:"BolumBaskanligi", type:"Ofis", name:"Bölüm Başkanlığı", x:736,y:468,w:52,h:36, room_code:"E409", info:""},
+      {id:"CenkToker", type:"Ofis", name:"Prof. Dr. Cenk Toker", x:763,y:545,w:25,h:36, room_code:"E410", info:""},
+      {id:"BarisYuksekkaya", type:"Ofis", name:"Doç. Dr. Barış Yüksekkaya", x:736,y:545,w:25,h:36, room_code:"E411", info:""},
+      {id:"ToplantiSalonu3", type:"Özel Amaçlı Salon", name:"Toplantı Salonu 3", x:709,y:545,w:25,h:36, room_code:"E412", info:""},
+      {id:"SolenKumbayYildiz", type:"Ofis", name:"Prof. Dr. Hüseyin Demircioğlu", x:682,y:545,w:25,h:36, room_code:"E413", info:""},
+      {id:"EsenYuksel", type:"Ofis", name:"Prof. Dr. Esen Yüksel", x:655,y:545,w:25,h:36, room_code:"E414", info:""},
+      {id:"BolumToplantiSalonu", type:"Özel Amaçlı Salon", name:"Bölüm Toplantı Salonu", x:461,y:551,w:106,h:122, room_code:"unknown", info:'<a href="https://debi.hacettepe.edu.tr/derslik/detay/712" target="_blank" rel="noopener noreferrer">Bilgi</a>'},
+    ]
+  },
   /* ,"2": { label:"2. Kat", outer:`...`, corridor:"...", rooms:[ ... ] } */
 };
 
-let currentFloor = Object.keys(FLOORS)[0];
+let currentFloor = "1";
 
 function buildRoomLabel(r){
   const name = r.name || "";
@@ -638,6 +746,86 @@ function buildRoomLabel(r){
   return `<text class="room-label" text-anchor="middle" style="font-size:${bestFontSize}px;pointer-events:none;">${textHtml}</text>`;
 }
 
+/* ---------- Kat sembolleri: merdiven / yangın merdiveni / asansör / giriş ---------- */
+
+function iconStairs(x,y){
+  return `<g class="feature-icon stairs" transform="translate(${x},${y})">
+    <rect class="fi-bg" x="-9" y="-9" width="18" height="18" rx="3"/>
+    <path class="fi-mark" d="M-5,5 H-1 V1 H3 V-3 H7 V-7"/>
+  </g>`;
+}
+
+function iconFireEscape(x,y){
+  return `<g class="feature-icon fire" transform="translate(${x},${y})">
+    <rect class="fi-bg" x="-9" y="-9" width="18" height="18" rx="3"/>
+    <path class="fi-mark" d="M-5,5 H-1 V1 H3 V-3 H7 V-7"/>
+    <path class="fi-fill" d="M-6,-9 c2.6,2 3.4,4 1.6,5.6 c-0.3,-1 -1,-1.4 -1.6,-0.6 c-0.5,0.8 0,1.6 0.7,2.1 c-1.8,0.1 -3,-1.1 -2.9,-2.7 C-7.9,-6.3 -7,-7.6 -6,-9 Z"/>
+  </g>`;
+}
+
+function iconElevator(x,y){
+  return `<g class="feature-icon elevator" transform="translate(${x},${y})">
+    <rect class="fi-bg" x="-9" y="-9" width="18" height="18" rx="3"/>
+    <path class="fi-fill" d="M0,-5.5 L-3.2,-1 L3.2,-1 Z"/>
+    <path class="fi-fill" d="M0,5.5 L-3.2,1 L3.2,1 Z"/>
+  </g>`;
+}
+
+function iconEntrance(x,y){
+  /* Kapı çerçevesi + içeri giren ok: bölüm/bina girişi */
+  return `<g class="feature-icon entrance" transform="translate(${x},${y})">
+    <rect class="fi-bg" x="-9" y="-9" width="18" height="18" rx="3"/>
+    <path class="fi-mark" d="M-3,-6 V6 M-3,-6 H2.5 M-3,6 H2.5"/>
+    <path class="fi-mark" d="M-2,0 H5.5 M2.5,-3 L6,0 L2.5,3"/>
+  </g>`;
+}
+
+function renderFeatures(floor){
+  if (!floor.features || !floor.features.length) return "";
+  return floor.features.map(f=>{
+    if (f.type === "stairs") return iconStairs(f.x, f.y);
+    if (f.type === "fire-escape") return iconFireEscape(f.x, f.y);
+    if (f.type === "elevator") return iconElevator(f.x, f.y);
+    if (f.type === "entrance") return iconEntrance(f.x, f.y);
+    return "";
+  }).join("");
+}
+
+/* ---------- Kata özel serbest metinler/etiketler ---------- */
+
+function renderTexts(floor){
+  if (!floor.texts || !floor.texts.length) return "";
+  return floor.texts.map(t=>{
+    const size = t.size || 11;
+    const anchor = t.anchor || "start";
+    const cls = t.strong ? "floor-note strong" : "floor-note";
+    return `<text class="${cls}" x="${t.x}" y="${t.y}" text-anchor="${anchor}" style="font-size:${size}px;">${t.text}</text>`;
+  }).join("");
+}
+
+/* ---------- Lejant (sağ üst) ---------- */
+
+function renderLegend(){
+  const boxW = 176, boxH = 132;
+  const x0 = 880 - boxW - 12, y0 = 12;
+  const rowH = 24;
+  const iconX = x0 + 20, textX = x0 + 38;
+  const row = i => y0 + 40 + i*rowH;
+  return `
+  <g class="legend">
+    <rect class="legend-bg" x="${x0}" y="${y0}" width="${boxW}" height="${boxH}" rx="6"/>
+    <text class="legend-title" x="${x0+14}" y="${y0+20}">Lejant</text>
+    ${iconStairs(iconX, row(0))}
+    <text class="legend-label" x="${textX}" y="${row(0)+4}">Merdiven</text>
+    ${iconFireEscape(iconX, row(1))}
+    <text class="legend-label" x="${textX}" y="${row(1)+4}">Yangın merdiveni</text>
+    ${iconElevator(iconX, row(2))}
+    <text class="legend-label" x="${textX}" y="${row(2)+4}">Asansör</text>
+    ${iconEntrance(iconX, row(3))}
+    <text class="legend-label" x="${textX}" y="${row(3)+4}">Giriş-çıkış</text>
+  </g>`;
+}
+
 function renderFloor(key){
   currentFloor = key;
   const floor = FLOORS[key];
@@ -654,6 +842,9 @@ function renderFloor(key){
       ${buildRoomLabel(r)}
     </g>`;
   });
+  html += renderTexts(floor);
+  html += renderFeatures(floor);
+  html += renderLegend();
   svg.innerHTML = html;
   document.getElementById("panel").innerHTML = `<div class="panel-empty">Bilgilerini görmek için bir odaya tıklayın.</div>`;
 
